@@ -440,8 +440,14 @@ onClipboardChange:
 		else try   clipboard_copy := LASTCLIP , ISACTIVEEXCEL := 1  	;so that Cj doesnt open excel clipboard (for a longer time) and cause problems 
 		;clipboard_copy = lastclip as to remove duplicate copies in excel , ^x or ^c makes lastclip empty
 		;debugTip("2") ;<<<<<<<<<
+		
+		; in excel, need this sleep. if no sleep, copy will easily fail.
+		; 如果在 excel 里不进行延时和重试，就很容易出现 eventinfo=0 导致复制失败的情况
+		if (ISACTIVEEXCEL)
+			while (A_eventinfo=0 and A_index<=20)
+				sleep 20
 		try eventinfo := A_eventinfo
-
+		
 		if ISACTIVEEXCEL
 			isLastFormat_changed := 1                           ;same reason as above
 		else
