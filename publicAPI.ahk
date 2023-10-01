@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 This function file helps any AHK script to use Clipjump API functions from its side. 
 Just include this file in your script.

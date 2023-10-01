@@ -1,4 +1,4 @@
-;--------------------- CHANNELS FOR CLIPJUMP --------------------------
+﻿;--------------------- CHANNELS FOR CLIPJUMP --------------------------
 ;== IDEAS ==
 ;	TEMPSAVE, CURSAVE
 ;		TOTALCLIPS

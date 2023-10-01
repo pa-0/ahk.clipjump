@@ -1,4 +1,4 @@
-;@Plugin-Name Ignored Window Manager
+﻿;@Plugin-Name Ignored Window Manager
 ;@Plugin-Description Manages the windows that will be ignored by Clipjump Clipboard monitoring and paste mode.
 ;@Plugin-Author fump2000
 ;@Plugin-Version 0.1

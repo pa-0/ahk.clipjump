@@ -1,4 +1,4 @@
-/*
+﻿/*
 TT_Console() v0.03
 	Use Tooltip as a User Interface
 

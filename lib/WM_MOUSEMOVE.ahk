@@ -1,4 +1,4 @@
-/*
+﻿/*
 WM_MOUSEMOVE() v0.01
 	Callback to enable ToolTips for Controls
 	Called whenever the mouse hovers over a control, this function shows a tooltip for the control over

@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Clipjump
 
 	Copyright 2013-15 Avi Aryan

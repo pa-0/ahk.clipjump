@@ -1,4 +1,4 @@
-;History Gui labels and functions
+﻿;History Gui labels and functions
 ;A lot Thanks to chaz who first improved it
 
 /**

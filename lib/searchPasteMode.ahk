@@ -1,4 +1,4 @@
-/*
+﻿/*
 Search in Paste Mode functions and labels file.
 introduced in v10.6
 */

@@ -1,4 +1,4 @@
-; Plugin API for Clipjump
+﻿; Plugin API for Clipjump
 
 /**
  * run a api function in the string given
