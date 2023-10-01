@@ -21,10 +21,11 @@ Returns >
 ;return
 
 
-TT_Console(msg, keys, x="", y="", fontops="", fontname="", whichtooltip=1, followMouse=0) {
+TT_Console(msg, keys, x:="", y:="", fontops:="", fontname:="", whichtooltip:=1, followMouse:=0, TabStops:="") {
 
+	RegExMatch(fontops, "\d+", FontSize)
 	; btt 可以直接处理字体，所以这里不用 gethfont 处理了。
-	btt(msg, x, y, whichtooltip, {Font:fontname})
+	btt(msg, x, y, whichtooltip, {Font:fontname, FontSize:FontSize, TabStops:[TabStops]})
 
 	;create hotkeys
 	loop, parse, keys, %A_space%, %a_space%

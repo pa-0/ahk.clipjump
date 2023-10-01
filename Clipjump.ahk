@@ -1306,8 +1306,10 @@ historyCleanup(){
 ;----------------------- ACTION MODE ----------------------------------------------------
 
 actionmode:
-	update_actionmode()
-	temp_am := TT_Console(ACTIONMODE.text, ACTIONMODE.keys, __x, __y, "s9", "Consolas", 5)
+	Font_actionmode := "Consolas"
+	FontSize_actionmode := 12
+	maximum_width_of_actionmode_text := update_actionmode(Font_actionmode, FontSize_actionmode)
+	temp_am := TT_Console(ACTIONMODE.text, ACTIONMODE.keys, __x, __y, FontSize_actionmode, Font_actionmode, 5, , maximum_width_of_actionmode_text)
 	if ACTIONMODE[temp_am] != "Exit_actmd"
 	{
 		if Instr(ACTIONMODE[temp_am] , "(")
@@ -1333,27 +1335,35 @@ init_actionmode(){
 		, U_caption: TXT.PLG_sync_cb, B_caption: TXT.SET_holdclip}
 }		; use runPlugin so that user might delete plugin
 
-update_actionmode(){
+update_actionmode(Font, FontSize){
 	static numadd := "0123456789"
 	thetext := ""
 	.  PROGNAME " " TXT.ACT__name
 	. "`n-----------"
 	. "`n"
 	ACTIONMODE.remove("text") , ACTIONMODE.remove("keys")
-
-	thetext .= "`n" fillWithSpaces(TXT.ACT_switchChannel, 25) " -  " "0..9"
-
+	
+	thetext .= "`n" TXT.ACT_switchChannel "`t-  " "0..9"
+	; temp_text is used to calculate the text width, the width is used to align the text
+	temp_text := TXT.ACT_switchChannel
+	
 	for k,v in ACTIONMODE
 	if !Instr(k, "_") && (k != "Esc") && v{
 		thekeys .= k " "
-		thetext .= "`n" fillwithSpaces( ACTIONMODE[k "_caption"] ? ACTIONMODE[k "_caption"] : v , 25 ) " -  " k
+		thetext .= "`n" (ACTIONMODE[k "_caption"] ? ACTIONMODE[k "_caption"] : v) "`t-  " k
+		temp_text .= "`n" (ACTIONMODE[k "_caption"] ? ACTIONMODE[k "_caption"] : v)
 	}
 	if ACTIONMODE.Esc
-		thetext .= "`n`n" fillwithSpaces( ACTIONMODE.Esc_caption ? ACTIONMODE.Esc_caption : ACTIONMODE.Esc , 25 ) " -  Esc" , thekeys .= "Esc"
+	{
+		thetext .= "`n`n" (ACTIONMODE.Esc_caption ? ACTIONMODE.Esc_caption : ACTIONMODE.Esc) "`t-  Esc" , thekeys .= "Esc"
+		temp_text .= "`n" (ACTIONMODE.Esc_caption ? ACTIONMODE.Esc_caption : ACTIONMODE.Esc)
+	}
 	loop, parse, numadd
 		thekeys .= " " A_LoopField
 	ACTIONMODE.keys := Trim(thekeys)
 	ACTIONMODE.text := thetext
+	
+	return btt(temp_text,,,, {Font:Font, FontSize:FontSize}, {JustCalculateSize:true}).w
 }
 
 ;****************COPY FILE/FOLDER/DATA***************************************************************************
