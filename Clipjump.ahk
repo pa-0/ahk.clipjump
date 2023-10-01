@@ -124,6 +124,9 @@ global ini_IsImageStored , ini_Quality , ini_MaxClips , ini_Threshold , ini_isMe
 		, chOrg_K, ini_startSearch, ini_revFormat2def, ini_pstMode_X, ini_pstMode_Y, ini_HisCloseOnInstaPaste, history_K, ini_ram_flush, ini_winClipjump := 1
 		, ini_monitorClipboard := 0
 
+;Global Position
+global picpos:={}, bttpos:={}
+
 ;Init General vars
 is_pstMode_active := 0
 
@@ -863,8 +866,13 @@ PasteModeTooltip(cText, notpaste=0) {
 		btt()
 		STORE["pstTipRebuild"] := 0
 	}
-	; SPM.X and y contain place to show a/c searchbox
-	tx := ini_pstMode_X ? ini_pstMode_X : SPM.X , ty := ini_pstMode_Y ? ini_pstMode_Y : SPM.Y
+	; 显示图片时，使用图片坐标反推 tooltip 的坐标，避免文字重叠显示在图片上。
+	; picpos.x 在这里是空值，所以验证 picpos.y。
+	if (picpos.y!="")
+		tx := picpos.x, ty := picpos.y, picpos:={}
+	else
+		; SPM.X and y contain place to show a/c searchbox
+		tx := ini_pstMode_X ? ini_pstMode_X : SPM.X , ty := ini_pstMode_Y ? ini_pstMode_Y : SPM.Y
 	if (notpaste == 1){
 		btt(cText, tx, ty)
 	} else {
@@ -1224,33 +1232,46 @@ AddClipPref(Ch, Cl, Pr, val){
 ;~ ;**************** GUI Functions ***************************************************************************
 
 showPreview(){
-	static scrnhgt := A_ScreenHeight / 2 , scrnwdt := A_ScreenWidth / 2
+	static scrnHgt := A_ScreenHeight // 2 , scrnWdt := A_ScreenWidth // 2
 	static imagepreview
+	global picpos
 
 	Gui, imgprv:New
-	Gui, imgprv:+LastFound +AlwaysOnTop -Caption +ToolWindow +Border
-	Gui, add, picture,x0 y0 w400 h300 vimagepreview,
+	Gui, imgprv:+LastFound +AlwaysOnTop -Caption +ToolWindow +Border -DPIScale
+	Gui, add, picture,x0 y0 vimagepreview,
 
 	if FileExist( (img := A_WorkingDir "\" THUMBS_dir "\" TEMPSAVE ".jpg") )
 	{
 		Gdip_getLengths(img, widthOfThumb, heightOfThumb)
+		ratio := widthOfThumb/heightOfThumb
 
 		if ( heightOfThumb > scrnHgt ) or ( widthOfThumb > scrnWdt )
-			displayH := heightOfThumb / 2
-			, displayW := widthOfThumb / 2
-		else 
+		{
+			if (heightOfThumb > widthOfThumb)
+				displayH := scrnHgt
+				, displayW := Round(displayH*ratio)
+			else
+				displayW := scrnWdt
+				, displayH := displayW//ratio
+		}
+		else
 			displayH := heightofthumb
 			, displayW := widthOfThumb
 
-		GuiControl, , imagepreview, *w%displayW% *h%displayH% %THUMBS_dir%\%TEMPSAVE%.jpg
+		hpic := LoadPicture(Format("{1}\{2}.jpg", THUMBS_dir, TEMPSAVE), Format("W{1} H{2} GDI+", displayW, displayH))
+		GuiControl, , imagepreview, % "HBITMAP:" hpic
 		MouseGetPos, ax, ay
-		ay := ay + (scrnHgt / 10)
-		if (scrnwdt*2-ax < displayw/2)
-			ax := 2
-		if (scrnhgt*2-ay < displayh/2)
-			ay := 2
+		dpi:= A_ScreenDPI/96
+		ay := ay + 50*dpi
+		if (ax+displayW > A_ScreenWidth-1)
+			ax := A_ScreenWidth-1 - displayW - 1	; gui's border = 1     xpos = width-1
+		if (ay+displayH > A_ScreenHeight-1)
+			ay := A_ScreenHeight-1 - displayH - 1
 		; Try ensures we dont see the error if it happens due to thread overlaps
 		tx := ini_pstMode_X ? ini_pstMode_X : ax , ty := ini_pstMode_Y ? ini_pstMode_Y : ay
+		; In the corner, need to correct the text pos by using the pic pos, otherwise overlap will occur.
+		; 不计算不保存x坐标，这样文本框在角落时依然跟随鼠标而不会跟随图片左上角，导致位置大幅跳跃进而造成视觉不和谐。
+		, picpos.y := ini_pstMode_Y ? ini_pstMode_Y : (ay - 50*dpi + 16*dpi)
 
 		try Gui, imgprv:Show, x%tx% y%ty% h%displayh% w%displayw% NoActivate, Display_Cj
 	}

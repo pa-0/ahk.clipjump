@@ -72,7 +72,7 @@ SPM_dispose:
 searchpm:
 	SPM.ACTIVE := 1
 	Gui, imgprv:Destroy
-	WinGetPos, pmtip_x, pmtip_y,,, ahk_class tooltips_class32
+	pmtip_x := bttpos.x, pmtip_y := bttpos.y
 	SPM.X := pmtip_x , SPM.Y := pmtip_y
 	correctTEMPSAVE() , SPM.TEMPSAVE := TEMPSAVE , SPM.CHANNEL := CN.NG
 	CN["CURSAVE" CN.N] := CURSAVE , CN["TEMPSAVE" CN.N] := TEMPSAVE 	; load all values in CN obj
