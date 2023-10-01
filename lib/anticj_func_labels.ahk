@@ -30,6 +30,7 @@ main:
 
 exit:
 	routines_Exit()
+	Gdip_Shutdown( Clipjump_GDIPToken )
 	ExitApp
 	return
 
@@ -557,34 +558,27 @@ Obj2Ini(obj, Ini, saveBlank=false){
 
 Gdip_SetImagetoClipboard( pImage ){
 	;Sets some Image file to Clipboard
-	PToken := Gdip_Startup()
 	pBitmap := Gdip_CreateBitmapFromFile(pImage)
 	Gdip_SetBitmaptoClipboard(pBitmap)
 	Gdip_DisposeImage( pBitmap )
-	Gdip_Shutdown( PToken)
 }
 
 ;Gdip_CaptureClipboard()
 ;	Captures Clipboard to file
 
 Gdip_CaptureClipboard(file, quality){
-	PToken := Gdip_Startup()
 	pBitmap := Gdip_CreateBitmapFromClipboard()
 	Gdip_SaveBitmaptoFile(pBitmap, file, quality)
 	Gdip_DisposeImage( pBitmap )
-	Gdip_Shutdown( PToken)
 }
 
 ; Gdip_Getdimensions()
 
 Gdip_getLengths(img, byref width, byref height) {
-
-	GDIPToken := Gdip_Startup()
 	pBM := Gdip_CreateBitmapFromFile( img )
 	width := Gdip_GetImageWidth( pBM )
 	height := Gdip_GetImageHeight( pBM )
 	Gdip_DisposeImage( pBM )
-	Gdip_Shutdown( GDIPToken )
 }
 
 ;	Flexible Active entity analyzer

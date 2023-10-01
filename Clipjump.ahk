@@ -284,6 +284,7 @@ IfExist, %A_Startup%/Clipjump.lnk
 EmptyMem()
 lastClipboardTime := 0
 startUpComplete := 1
+Clipjump_GDIPToken := Gdip_Startup(1)		; 这里使用多实例再申请一个gdip，否则会和btt的冲突。
 OnExit, exit
 
 return
