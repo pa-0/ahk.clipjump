@@ -92,8 +92,7 @@ gui_Settings()
 	Gui, Add, Hotkey, 	x%x_ofhotkeys% yp-3 w%width_hk_control% vplugM_K 	ghotkey_plugM, % pluginManager_K
 
 	;---- Channels
-	Gui, Add, GroupBox, % "xs-9 y" height_group+16 " w" right_size " h" height_downgroup, % PROGNAME " " TXT.SET_channels
-	Gui, Add, Text, 	xs yp+22,	% TXT._pitswp " Hotkey"
+	Gui, Add, Text, 	xs y+8,	% TXT._pitswp
 	Gui, Add, Hotkey,	x%x_ofhotkeys% yp-3 w%width_hk_control% vpitswp_K  ghotkey_pitswp, % pitswap_K
 
 	;---- Buttons

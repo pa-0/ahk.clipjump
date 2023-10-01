@@ -100,7 +100,7 @@ trayMenu(destroy=0){
 		Menu, Maintanence_Tray, Add, % TXT.TRY_updates, updt
 	Menu, Tray, Add, % TXT._maintenance, :Maintanence_Tray
 		Menu, Options_Tray, Add, % TXT.TRY_incognito, incognito
-		Menu, Options_Tray, Add, % TXT.TRY_disable " " PROGNAME, disable_clipjump
+		Menu, Options_Tray, Add, % TXT.TRY_disable, disable_clipjump
 		Menu, Options_Tray, Add, % TXT.TRY_startup, strtup
 	Menu, Tray, Add, % TXT.TRY_options, :Options_Tray
 		Menu, Tools_Tray, Add, % TXT.SET_org "`t" Hparse_Rev(chOrg_K), channelOrganizer

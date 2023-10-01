@@ -474,7 +474,7 @@ chOrg_preview:
  */
 chOrg_renameCh:
 	gosub chorg_getChSelected
-	InputBox, outName, % TXT.ORG__name, % TXT.ORG_renameAsk " -> " chSel,, 500, 200,,,,, % chSelname
+	InputBox, outName, % TXT.ORG__name, % TXT.ORG_renameAsk " - " chSel,, 500, 200,,,,, % chSelname
 	if (ErrorLevel=1) or (outName="")
 		return
 	renameChannel(chSel, outName)

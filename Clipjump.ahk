@@ -1596,7 +1596,7 @@ disable_clipjump:
 	changeIcon()
 
 	hkZ( ( paste_k ? "$" pstIdentifier paste_k : emptyvar ) , "Paste", CLIPJUMP_STATUS)
-	Menu, Options_Tray, % !CLIPJUMP_STATUS ? "Check" : "Uncheck", % TXT.TRY_disable " " PROGNAME
+	Menu, Options_Tray, % !CLIPJUMP_STATUS ? "Check" : "Uncheck", % TXT.TRY_disable
 	init_actionmode() 			;refresh enable/disable text in action mode
 	return
 
