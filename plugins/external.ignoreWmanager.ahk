@@ -137,14 +137,14 @@ classget_Tool(){
 		sleep 20
 
 	setTimer, classget, Off
-	ToolTip, ,,, 6
+	btt(,,, 6)
 	Hotkey, Esc, classTool_end, Off
 	Hotkey, Space, classTool_copy, Off
 	return classtool_cl
 
 classget:
 	WinGetClass, classtool_cl, A
-	Tooltip, % classtool_cl "`n`n" TXT.IGN_tip,,, 6
+	btt(classtool_cl "`n`n" TXT.IGN_tip,,, 6)
 	return
 
 classTool_copy:

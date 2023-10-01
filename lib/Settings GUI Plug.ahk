@@ -200,7 +200,7 @@ settingsButtonCancel:
 settingsGuiEscape:
 settingsGuiClose:
 	Gui, Settings:Destroy
-	Tooltip, ,,, 4
+	btt(,,, 4)
 	settingsHaveChanged := false
 	OnMessage(0x200, "")
 	EmptyMem()

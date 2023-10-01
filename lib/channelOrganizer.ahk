@@ -179,7 +179,7 @@ chOrgGuiClose:
 	Menu, chOrgLBMenu, DeleteAll
 	Menu, chOrgSubM, DeleteAll
 	OnMessage(0x200, "") 		; This will conflict in case both settings and chorg are active at the same time
-	Tooltip,,,, 4
+	btt(,,, 4)
 	EmptyMem()
 	return
 

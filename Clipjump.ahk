@@ -496,7 +496,7 @@ clipChange(CErrorlevel, clipboard_copy) {
 			}
 
 			BeepAt(ini_CopyBeep, beepFrequency)
-			ToolTip, %copyMessage%
+			btt(copyMessage)
 
 			if CLIP_ACTION = CUT
 			{
@@ -524,7 +524,7 @@ clipChange(CErrorlevel, clipboard_copy) {
 			}
 
 			BeepAt(ini_CopyBeep, beepFrequency)
-			ToolTip, %copyMessage%
+			btt(copyMessage)
 			thumbGenerator()
 
 			if NOINCOGNITO and ini_IsImageStored and ( CN.Name != "pit" ){
@@ -763,12 +763,12 @@ clipSaver() {
 	FileDelete, %CLIPS_dir%/%CURSAVE%.avc
 	HASCOPYFAILED := 0
 
-	Tooltip, % TXT["_processing"],,, 7
+	btt(TXT["_processing"],,, 7)
 	while !copied
 	{
 		if ( A_index=100 ) or HASCOPYFAILED {
 			HASCOPYFAILED := 1
-			Tooltip,,,, 7
+			btt(,,, 7)
 			return
 		}
 		try {
@@ -798,7 +798,7 @@ clipSaver() {
 			else {
 				LASTCLIP := "" , LASTFORMAT := "" , HASCOPYFAILED := 1 	; lastclip was not captured by cj
 				if (temp21 = "Insert") {
-					Tooltip, % TXT["_processing"]
+					btt(TXT["_processing"])
 					SetTimer, addClipLater, -50
 				}
 			}
@@ -807,7 +807,7 @@ clipSaver() {
 				foolGUI(0)
 		}
 	}
-	Tooltip,,,, 7
+	btt(,,, 7)
 	; check for empty file
 	FileRead, test, %CLIPS_dir%/%CURSAVE%.avc
 	if test=
@@ -859,22 +859,21 @@ PasteModeTooltip(cText, notpaste=0) {
 	global
 	local tx, ty
 	if STORE["pstTipRebuild"] {
-		Tooltip
-		TooltipEx()
+		btt()
 		STORE["pstTipRebuild"] := 0
 	}
 	; SPM.X and y contain place to show a/c searchbox
 	tx := ini_pstMode_X ? ini_pstMode_X : SPM.X , ty := ini_pstMode_Y ? ini_pstMode_Y : SPM.Y
 	if (notpaste == 1){
-		Tooltip, % cText, % tx, % ty
+		btt(cText, tx, ty)
 	} else {
 		tagText := (t := CPS[CN.NG][realActive]["Tags"]) != "" ? "(" t ")" : ""
 		if (cText == "")
-			ToolTip % "{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) tagText " " fixStatus 
-		. (WinExist("Display_Cj") ? "" : "`n`n" MSG_ERROR "`n`n"), % tx, % ty
+			bttpos:=btt("{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) tagText " " fixStatus
+		. (WinExist("Display_Cj") ? "" : "`n`n" MSG_ERROR "`n`n"), tx, ty)
 		else
-			ToolTip % "{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) GetClipboardFormat() fillWithSpaces("",5) (curPformat ? "[" curPformat "]" : "") 
-			. fillWithSpaces("",5) tagText " " fixstatus "`n`n" halfclip, % tx, % ty
+			bttpos:=btt("{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) GetClipboardFormat() fillWithSpaces("",5) (curPformat ? "[" curPformat "]" : "")
+			. fillWithSpaces("",5) tagText " " fixstatus "`n`n" halfclip, tx, ty)
 	}
 }
 
@@ -919,7 +918,7 @@ ctrlCheck:
 		}
 		else if ctrlRef in cut,copy
 		{
-			Tooltip
+			btt()
 			Critical, Off
 			temp21 := choosechannelgui()
 			if Instr(temp21, "-") != 1
@@ -977,7 +976,7 @@ ctrlCheck:
 				try Clipboard := oldclip_data       ;The command opens, writes and closes clipboard . The ONCC Label is launched when writing takes place.
 
 		sleep % sleeptime
-		Tooltip
+		btt()
 
 		restoreCaller := PASTEMODE_ACT := 0 	; restoreCaller - make it 0 in case Clipboard was not touched (Pasting was done)
 		if !GetKeyState(pstKeyName) && !SPM.ACTIVE
@@ -1003,7 +1002,7 @@ ctrlCheck:
 endPastemode:
 	; ends the paste abruptly - as required by export and suspend
 	Gui, imgprv:Destroy
-	Tooltip
+	btt()
 	SetTimer, ctrlCheck, Off
 	if SPM.ACTIVE
 		gosub SPM_dispose
@@ -1029,8 +1028,7 @@ Ssuspnd:
 	return
 
 pstMode_Help:
-	Tooltip
-	TooltipEx(TXT.SET_shortcuts "`n" TXT.TIP_help, __x, __y, 1, getHFONT("s8", "Consolas"))
+	btt(TXT.SET_shortcuts "`n" TXT.TIP_help, __x, __y)
 	;PasteModeTooltip(TXT.SET_shortcuts "`n" TXT.TIP_help, 1) ;, "S8, Consolas")
 	STORE["pstTipRebuild"] := 1
 	return
@@ -1394,9 +1392,9 @@ strtup:
 	return
 
 updt:
-	Tooltip, Checking for Updates ...... , , , 3
+	btt("Checking for Updates ...... ", , , 3)
 	URLDownloadToFile, %UPDATE_FILE%, %A_WorkingDir%/cache/latestversion.txt
-	ToolTip, ,,, 3
+	btt(,,, 3)
 	FileRead, temp, %A_WorkingDir%/cache/latestversion.txt
 	lversion_changes := "`n`nCHANGES`n"
 	loop, parse, temp, `n, `r
@@ -1421,7 +1419,7 @@ addToWinClip(lastEntry, extraTip){
 	if CURSAVE
 		try FileRead, Clipboard, *c %A_WorkingDir%/%CLIPS_dir%/%lastentry%.avc
 	Sleep, 1000
-	ToolTip
+	btt()
 	API.blockMonitoring(0)
 }
 
@@ -1470,7 +1468,7 @@ export:
 	loop
 		if !FileExist(temp := A_MyDocuments "\export" A_index ".cj")
 			break
-	Tooltip % "{" CN.Name "} Clip " realClipNo " " TXT._exportedto "`n" temp
+	btt("{" CN.Name "} Clip " realClipNo " " TXT._exportedto "`n" temp)
 	SetTimer, TooltipOff, 2500
 	try FileAppend, %ClipboardAll%, % temp
 	return
@@ -1492,7 +1490,7 @@ editClip(cnl, clip, owner="none"){
 		API.blockMonitoring(0)
 	}
 	temp_clipboard := trygetVar("Clipboard")
-	Tooltip, % TXT.TIP_editing,,, 10
+	btt(TXT.TIP_editing,,, 10)
 	if owner = pstmd
 	{
 		IScurCBACTIVE := 1
@@ -1649,14 +1647,13 @@ Receive_WM_COPYDATA(wParam, lParam){
 #Include %A_ScriptDir%\lib\multi.ahk
 #Include %A_ScriptDir%\lib\aboutgui.ahk
 #include %A_ScriptDir%\lib\TT_Console.ahk
-#include %A_ScriptDir%\lib\Gdip_min.ahk
+#include %A_ScriptDir%\lib\BTT.ahk
 #include %A_ScriptDir%\lib\HotkeyParser.ahk
 #include %A_ScriptDir%\lib\anticj_func_labels.ahk
 #include %A_ScriptDir%\lib\settings gui plug.ahk
 #include %A_ScriptDir%\lib\history gui plug.ahk
 #include %A_ScriptDir%\lib\pluginManager.ahk
 #include %A_ScriptDir%\lib\channelOrganizer.ahk
-#include %A_ScriptDir%\lib\TooltipEx.ahk
 #include %A_ScriptDir%\lib\SQLiteDB\Class_SQLiteDB.ahk
 #include %A_ScriptDir%\lib\settingsHelper.ahk
 #include *i %A_ScriptDir%\plugins\_registry.ahk

@@ -618,7 +618,7 @@ getParams(sum){
 }
 
 autoTooltip(Text, Time, which=1){
-	ToolTip, % Text, , , % which
+	btt(Text, , , which)
 	SetTimer,% "Tooltipoff" which ,% Time
 }
 
@@ -635,7 +635,7 @@ TooltipOff9:
 TooltipOff10:
 TooltipOff11:
 	SetTimer, % A_ThisLabel, Off
-	ToolTip,,,, % ( Substr(A_ThisLabel, 0) == "f" ) ? 1 : RegExReplace(A_ThisLabel, "TooltipOff")
+	btt(,,, ( Substr(A_ThisLabel, 0) == "f" ) ? 1 : RegExReplace(A_ThisLabel, "TooltipOff"))
 	return
 
 emptylabel:
@@ -662,7 +662,7 @@ getQuant(str, what){
 
 ;Used for Debugging
 debugTip(text, x="", y="", tooltipno=20){
-	Tooltip, % text,% x,% y, % tooltipno
+	btt(text,x,y, tooltipno)
 }
 
 fillwithSpaces(text="", limit=35){

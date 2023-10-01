@@ -416,13 +416,13 @@ class API
 		if forTime
 			autoTooltip(Text, forTime, 7)
 		else
-			Tooltip, % Text,,, 7
+			btt(Text,,, 7)
 		;tooltip_setfont("s9", "Courier")
 	}
 
 	; removes the above tip
 	removeTip(){
-		ToolTip,,,, 7
+		btt(,,, 7)
 	}
 
 	; get the text from a ClipboardAll binary
