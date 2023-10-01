@@ -20,19 +20,6 @@ The program records changes in the system clipboard, stores them without any lim
 8. only x64 version.
 
 
-## Running from the Source
-1. Get [AutoHotkey](https://www.autohotkey.com/) and install it.
-2. Then double-click `Clipjump.ahk` to run it with AutoHotkey.exe
-
-
-## Distribution
-Clipjump is distributed without compiling and a disguised AutoHotkey.exe renamed as  Clipjump.exe runs Clipjump.ahk  
-  
-1. Get the [ResHacked AutoHotkey.exe](http://sourceforge.net/projects/clipjump/files/other_downloads/Clipjump_ahkExe.7z/download) from sourceforge. This is the one which is to be distributed as Clipjump.exe  
-2. Correct the version numbers of the binary file.  
-3. Distribute it with the source.
-
-
 ## Building the Docs
 Docs can be compiled using Jekyll and then Microsoft's HHC. First build the website folder using Jekyll and then compile the jekyll-processed files using HHC.
 
