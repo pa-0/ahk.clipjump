@@ -18,7 +18,7 @@
 
 ;@Ahk2Exe-SetName Clipjump
 ;@Ahk2Exe-SetDescription Clipjump
-;@Ahk2Exe-SetVersion 12.5
+;@Ahk2Exe-SetVersion 12.6
 ;@Ahk2Exe-SetCopyright Avi Aryan
 ;@Ahk2Exe-SetOrigFilename Clipjump.exe
 
@@ -45,7 +45,7 @@ PROGRAM VARIABLES
 */
 
 global PROGNAME := "Clipjump"
-global VERSION := "12.5"
+global VERSION := "12.6"
 global CONFIGURATION_FILE := "settings.ini"
 
 ini_LANG := ini_read("System", "lang")
