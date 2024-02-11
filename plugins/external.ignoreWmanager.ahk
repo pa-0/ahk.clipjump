@@ -496,3 +496,5 @@ LV_Colors_SubclassProc(H, M, W, L, S, R) {
    Return DllCall("Comctl32.dll\DefSubclassProc", "Ptr", H, "UInt", M, "Ptr", W, "Ptr", L, "UInt")
 }
 ; ======================================================================================================================
+
+#Include %A_ScriptDir%\..\lib\btt.ahk
