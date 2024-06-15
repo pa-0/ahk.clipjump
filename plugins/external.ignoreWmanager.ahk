@@ -1,4 +1,4 @@
-;@Plugin-Name Ignored Window Manager
+﻿;@Plugin-Name Ignored Window Manager
 ;@Plugin-Description Manages the windows that will be ignored by Clipjump Clipboard monitoring and paste mode.
 ;@Plugin-Author fump2000
 ;@Plugin-Version 0.1
@@ -137,14 +137,14 @@ classget_Tool(){
 		sleep 20
 
 	setTimer, classget, Off
-	ToolTip, ,,, 6
+	btt(,,, 6)
 	Hotkey, Esc, classTool_end, Off
 	Hotkey, Space, classTool_copy, Off
 	return classtool_cl
 
 classget:
 	WinGetClass, classtool_cl, A
-	Tooltip, % classtool_cl "`n`n" TXT.IGN_tip,,, 6
+	btt(classtool_cl "`n`n" TXT.IGN_tip,,, 6)
 	return
 
 classTool_copy:
@@ -496,3 +496,5 @@ LV_Colors_SubclassProc(H, M, W, L, S, R) {
    Return DllCall("Comctl32.dll\DefSubclassProc", "Ptr", H, "UInt", M, "Ptr", W, "Ptr", L, "UInt")
 }
 ; ======================================================================================================================
+
+#Include %A_ScriptDir%\..\lib\btt.ahk

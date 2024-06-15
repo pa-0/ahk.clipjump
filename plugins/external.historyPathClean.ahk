@@ -1,4 +1,4 @@
-;@Plugin-Name History file paths cleaner
+﻿;@Plugin-Name History file paths cleaner
 ;@Plugin-Description Cleans History tool of copied file paths and folder paths.
 ;@Plugin-Author Avi
 ;@Plugin-version 0.1

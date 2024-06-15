@@ -1,4 +1,4 @@
-;@Plugin-Name Delete [File/Folder]
+﻿;@Plugin-Name Delete [File/Folder]
 ;@Plugin-Description Deletes clips that are [File/Folder] type from a channel.
 ;@Plugin-Author Avi
 ;@Plugin-Version 0.3

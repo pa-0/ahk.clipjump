@@ -30,6 +30,7 @@ main:
 
 exit:
 	routines_Exit()
+	Gdip_Shutdown( Clipjump_GDIPToken )
 	ExitApp
 	return
 
@@ -557,34 +558,27 @@ Obj2Ini(obj, Ini, saveBlank=false){
 
 Gdip_SetImagetoClipboard( pImage ){
 	;Sets some Image file to Clipboard
-	PToken := Gdip_Startup()
 	pBitmap := Gdip_CreateBitmapFromFile(pImage)
 	Gdip_SetBitmaptoClipboard(pBitmap)
 	Gdip_DisposeImage( pBitmap )
-	Gdip_Shutdown( PToken)
 }
 
 ;Gdip_CaptureClipboard()
 ;	Captures Clipboard to file
 
 Gdip_CaptureClipboard(file, quality){
-	PToken := Gdip_Startup()
 	pBitmap := Gdip_CreateBitmapFromClipboard()
 	Gdip_SaveBitmaptoFile(pBitmap, file, quality)
 	Gdip_DisposeImage( pBitmap )
-	Gdip_Shutdown( PToken)
 }
 
 ; Gdip_Getdimensions()
 
 Gdip_getLengths(img, byref width, byref height) {
-
-	GDIPToken := Gdip_Startup()
 	pBM := Gdip_CreateBitmapFromFile( img )
 	width := Gdip_GetImageWidth( pBM )
 	height := Gdip_GetImageHeight( pBM )
 	Gdip_DisposeImage( pBM )
-	Gdip_Shutdown( GDIPToken )
 }
 
 ;	Flexible Active entity analyzer
@@ -618,7 +612,7 @@ getParams(sum){
 }
 
 autoTooltip(Text, Time, which=1){
-	ToolTip, % Text, , , % which
+	btt(Text, , , which)
 	SetTimer,% "Tooltipoff" which ,% Time
 }
 
@@ -635,7 +629,7 @@ TooltipOff9:
 TooltipOff10:
 TooltipOff11:
 	SetTimer, % A_ThisLabel, Off
-	ToolTip,,,, % ( Substr(A_ThisLabel, 0) == "f" ) ? 1 : RegExReplace(A_ThisLabel, "TooltipOff")
+	btt(,,, ( Substr(A_ThisLabel, 0) == "f" ) ? 1 : RegExReplace(A_ThisLabel, "TooltipOff"))
 	return
 
 emptylabel:
@@ -662,7 +656,7 @@ getQuant(str, what){
 
 ;Used for Debugging
 debugTip(text, x="", y="", tooltipno=20){
-	Tooltip, % text,% x,% y, % tooltipno
+	btt(text,x,y, tooltipno)
 }
 
 fillwithSpaces(text="", limit=35){
@@ -788,10 +782,6 @@ Base2Number(H, base=16){
 	loop,parse,H
 		N+=((A_LoopField*1="")?Asc(A_LoopField)-87:A_LoopField)*base**(S-A_index)
 	return N
-}
-
-max(a, b){
-	return (a>b) ? a : b
 }
 
 ; Code by deo http://www.autohotkey.com/board/topic/74348-send-command-when-switching-to-russian-input-language/#entry474543

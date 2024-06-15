@@ -1,4 +1,4 @@
-/**
+﻿/**
  * This file has functions which help the settings gui and making changes according to settings.ini in general
  */
 

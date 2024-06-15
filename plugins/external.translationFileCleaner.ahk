@@ -1,4 +1,4 @@
-;@Plugin-Name Translation File Cleaner
+﻿;@Plugin-Name Translation File Cleaner
 ;@Plugin-Description Finds extra and duplicate keys in translation files and shows them
 ;@Plugin-Author Avi
 ;@Plugin-version 0.1

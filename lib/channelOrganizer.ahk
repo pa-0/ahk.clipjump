@@ -1,4 +1,4 @@
-/* *****************
+﻿/* *****************
   Channel Organizer
  * *****************
 */
@@ -179,7 +179,7 @@ chOrgGuiClose:
 	Menu, chOrgLBMenu, DeleteAll
 	Menu, chOrgSubM, DeleteAll
 	OnMessage(0x200, "") 		; This will conflict in case both settings and chorg are active at the same time
-	Tooltip,,,, 4
+	btt(,,, 4)
 	EmptyMem()
 	return
 
@@ -474,7 +474,7 @@ chOrg_preview:
  */
 chOrg_renameCh:
 	gosub chorg_getChSelected
-	InputBox, outName, % TXT.ORG__name, % TXT.ORG_renameAsk " -> " chSel,, 500, 200,,,,, % chSelname
+	InputBox, outName, % TXT.ORG__name, % TXT.ORG_renameAsk " - " chSel,, 500, 200,,,,, % chSelname
 	if (ErrorLevel=1) or (outName="")
 		return
 	renameChannel(chSel, outName)

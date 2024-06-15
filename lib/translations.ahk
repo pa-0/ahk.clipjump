@@ -1,4 +1,4 @@
-;Translations Function for Clipjump
+﻿;Translations Function for Clipjump
 ;IDEAS
 ;Translation files are simple text-files with var=value syntax . Add ; before for comment . Only newline comments
 ;returns object

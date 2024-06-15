@@ -1,4 +1,4 @@
-;History Gui labels and functions
+﻿;History Gui labels and functions
 ;A lot Thanks to chaz who first improved it
 
 /**
@@ -8,7 +8,7 @@
 gui_History(){
 	global
 	static x, y, how_sort := 2_sort := 3_sort := 0, what_sort := 2
-	local selected_row, thisguisize
+	local selected_row
 	hst_genWt := 750
 	;2_3_sort are the vars storing how cols are sorted , 1 means in Sort ; 0 means SortDesc
 
@@ -52,6 +52,7 @@ gui_History(){
 	history_UpdateSTB()
 	LV_ModifyCol(what_sort, how_sort ? "Sort" : "SortDesc")
 
+	GuiControlGet, history_SearchBox, History:pos 		; extract x for later use. historyGuiSize: 段需要用到
 	if ((h+0) == WORKINGHT)
 	{
 		Gui, History:Show, Maximize, % PROGNAME " " TXT.HST__name
@@ -64,11 +65,6 @@ gui_History(){
 
 	WinWaitActive, % PROGNAME " " TXT.HST__name
 	WinGetPos, x, y
-
-	;resize the search box
-	GuiControlGet, history_SearchBox, History:pos 		;extract x for later use
-	WinGetPos,,, thisguisize,, % PROGNAME " " TXT.HST__name
-	GuiControl, Move, history_SearchBox, % "w" (thisguisize- history_Searchboxx - 21) 		;7,7 for outer border, 7 for inner border
 
 	;create hotkeys
 	Hotkey, IfWinActive, % PROGNAME " " TXT.HST__name
@@ -223,13 +219,13 @@ historyGuiSize:
 		gui_w := a_guiwidth , gui_h := a_guiheight
 
 		SendMessage, 0x1000+29, 1,	0, SysListView321, % PROGNAME " " TXT.HST__name
-		w2 := ErrorLevel
+		w2 := ErrorLevel // (A_ScreenDPI/96)
 		SendMessage, 0x1000+29, 2,	0, SysListView321, % PROGNAME " " TXT.HST__name
-		w3 := ErrorLevel
+		w3 := ErrorLevel // (A_ScreenDPI/96)
 
-		GuiControl, Move, historyLV, % "w" (gui_w - 15) " h" (gui_h - 65)     ;+20 H in no STatus Bar
-		LV_ModifyCol(1, gui_w-15-w2-w3-25) 				;gui_w - x  where   x  =  width of all cols + 25
-		GuiControl, Move, history_SearchBox, % " w" (gui_w - (history_SearchBoxx ?  history_SearchBoxx : hst_genWt-300)  -7) ; 7 for innermargin
+		GuiControl, Move, historyLV, % "w" (gui_w - 15) " h" (gui_h - 65) ; +20 H in no STatus Bar
+		LV_ModifyCol(1, (gui_w-15-w2-w3-25)) ; gui_w - x  where   x  =  width of all cols + 25
+		GuiControl, Move, history_SearchBox, % " w" (gui_w - (history_SearchBoxx ? history_SearchBoxx : hst_genWt-300) - 7) ; 7 for innermargin
 	}
 	return
 
@@ -267,7 +263,7 @@ historyGuiEscape:
  */
 gui_Clip_Preview(path, searchBox="", owner="History")
 {
-	global prev_copybtn, prev_findtxt, prev_handle, preview_search, prev_picture, preview, prev_findtxtw
+	global prev_OutputVar, prev_copybtn, prev_findtxt, prev_handle, preview_search, prev_picture, preview, prev_findtxtw
 	static wt := A_ScreenWidth / 2.2 , ht := A_ScreenHeight / 2.5 ;, maxlines = Round(ht / 13)
 	preview := {}
 
@@ -295,10 +291,10 @@ gui_Clip_Preview(path, searchBox="", owner="History")
 	else
 	{
 		try {
-			Gui, Add, ActiveX, w%wt% h%ht% vprev_handle, Shell.Explorer
-			ComObjConnect(prev_handle, new ActiveXEvent) 				;do this only when the previous one succeeds
+			Gui, Add, ActiveX, w%wt% h%ht% vprev_handle, HtmlFile
 		}
-		try prev_handle.Navigate( preview.path )
+		FileRead, prev_OutputVar, % preview.path
+		try prev_handle.write(prev_OutputVar)
 	}
 
 	Gui, Font, s11
@@ -325,7 +321,7 @@ gui_Clip_Preview(path, searchBox="", owner="History")
 button_Copy_to_Clipboard:
 	Gui, Preview:Submit, nohide
 	if !preview.isimg
-		try Clipboard := prev_handle.Document.body.innerText
+		try Clipboard := prev_handle.body.innerText
 	else
 		Gdip_SetImagetoClipboard(preview.path)
 	sleep 500
@@ -348,10 +344,15 @@ previewGuiEscape:
  * search in preview gui
  * highlights the matches too
  */
+; 换行符包含`r`n会导致错误
+; .exe 的文件名会导致错误 例如拖动到 “fewfewfewf.exe” 运行正常 拖动到 “autohotkey.exe” 运行错误
+; 加括号与不加括号的区别 “prev_document := prev_handle.body.createTextRange” 不加括号有时运行正常 有时失败
 previewSearch:
 	Critical
 	Gui, submit, nohide
-	prev_document := prev_handle.Document.body.createTextRange
+	prev_handle.close()			;由于不同运行方式导致的结果不一致，所以这里必须先关闭一次，使得下一句“.write()”的时候可以写出全新的内容而不是继续添加！
+	prev_handle.write(prev_OutputVar)
+	prev_document := prev_handle.body.createTextRange()
 	prev_document.execCommand("BackColor", 0, "White")
 	preview_search := Trim(preview_search, A_space)
 	if preview_search =
@@ -363,9 +364,9 @@ previewSearch:
 		loop, parse, preview_search, %A_space%, %A_space%
 		{
 			while prev_document.findtext(A_LoopField)
-				prev_document.execCommand("BackColor", 0, "Aqua")        
+				prev_document.execCommand("BackColor", 0, "Aqua")
 				, prev_document.Collapse(0)
-			prev_document := prev_handle.Document.body.createTextRange
+			prev_document := prev_handle.body.createTextRange()
 		}
 
 	;highlight exact matches
@@ -475,8 +476,10 @@ historyUpdate(crit="", create=true, partial=false){
 	{
 		Iniread, w2,% CONFIGURATION_FILE, Clipboard_History_window, w2, 155
 		Iniread, w3,% CONFIGURATION_FILE, Clipboard_History_window, w3, 70
-		w1 := (history_w - 15 - w2 - w3)
-		LV_ModifyCol(1, w1) , LV_ModifyCol(2, w2?w2:155) , Lv_ModifyCol(3, (w3?w3:70) " Integer") , Lv_ModifyCol(4, "0")
+		w2 := w2 // (A_ScreenDPI/96)
+		w3 := w3 // (A_ScreenDPI/96)
+		w1 := (history_w-15-w2-w3-25)
+		LV_ModifyCol(1, w1) , LV_ModifyCol(2, w2) , Lv_ModifyCol(3, w3 " Integer") , Lv_ModifyCol(4, "0")
 	}
 }
 

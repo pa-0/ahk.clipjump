@@ -1,4 +1,4 @@
-/*
+﻿/*
 WM_MOUSEMOVE() v0.01
 	Callback to enable ToolTips for Controls
 	Called whenever the mouse hovers over a control, this function shows a tooltip for the control over
@@ -62,7 +62,7 @@ WM_MOUSEMOVE()
 	currControl := A_GuiControl
     If (currControl <> prevControl and !InStr(currControl, " ") and !Instr(currControl, "&"))
     {
-		ToolTip, ,,, 4	;remove the old Tooltip
+		btt(,,, 4)	;remove the old Tooltip
 		global Text_TT := %currControl%_TT
 		SetTimer, DisplayToolTip, 650
         prevControl := currControl
@@ -71,12 +71,12 @@ WM_MOUSEMOVE()
 
 DisplayToolTip:
     SetTimer, DisplayToolTip, Off
-    ToolTip, % Text_TT,,, 4  ; The leading percent sign tell it to use an expression.
+    btt(Text_TT,,, 4)  ; The leading percent sign tell it to use an expression.
     SetTimer, RemoveToolTip, 8000
     return
 
 removeToolTip:
     SetTimer, removeToolTip, Off
-    ToolTip, ,,, 4
+    btt(,,, 4)
     return
 }

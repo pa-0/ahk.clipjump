@@ -1,4 +1,4 @@
-;@Plugin-Name IniEditor
+﻿;@Plugin-Name IniEditor
 ;@Plugin-Description IniEditor by rbrtryn
 ;@Plugin-Author rbrtryn
 ;@Plugin-Tags settings.ini

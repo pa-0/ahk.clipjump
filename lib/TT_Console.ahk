@@ -1,4 +1,4 @@
-/*
+﻿/*
 TT_Console() v0.03
 	Use Tooltip as a User Interface
 
@@ -21,10 +21,11 @@ Returns >
 ;return
 
 
-TT_Console(msg, keys, x="", y="", fontops="", fontname="", whichtooltip=1, followMouse=0) {
+TT_Console(msg, keys, x:="", y:="", fontops:="", fontname:="", whichtooltip:=1, followMouse:=0, TabStops:="") {
 
-	hFont := getHFONT(fontops, fontname)
-	TooltipEx(msg, x, y, whichtooltip, hFont)
+	RegExMatch(fontops, "\d+", FontSize)
+	; btt 可以直接处理字体，所以这里不用 gethfont 处理了。
+	btt(msg, x, y, whichtooltip, {Font:fontname, FontSize:FontSize, TabStops:[TabStops]})
 
 	;create hotkeys
 	loop, parse, keys, %A_space%, %a_space%
@@ -35,14 +36,14 @@ TT_Console(msg, keys, x="", y="", fontops="", fontname="", whichtooltip=1, follo
 	{
 		if followMouse
 		{
-			TooltipEx(msg,,, whichtooltip)
+			btt(msg,,, whichtooltip)
 			sleep 100
 		} else {
 			sleep 20
 		}
 	}
 
-	TooltipEx(,,, whichtooltip)
+	btt(,,, whichtooltip)
 
 	loop, parse, keys, %A_space%, %a_space%
 		hkZ(A_LoopField, "TT_Console_Check", 0)

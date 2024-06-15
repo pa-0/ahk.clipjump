@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Clipjump
 
 	Copyright 2013-15 Avi Aryan
@@ -18,7 +18,7 @@
 
 ;@Ahk2Exe-SetName Clipjump
 ;@Ahk2Exe-SetDescription Clipjump
-;@Ahk2Exe-SetVersion 12.5
+;@Ahk2Exe-SetVersion 12.6
 ;@Ahk2Exe-SetCopyright Avi Aryan
 ;@Ahk2Exe-SetOrigFilename Clipjump.exe
 
@@ -45,7 +45,7 @@ PROGRAM VARIABLES
 */
 
 global PROGNAME := "Clipjump"
-global VERSION := "12.5"
+global VERSION := "12.6"
 global CONFIGURATION_FILE := "settings.ini"
 
 ini_LANG := ini_read("System", "lang")
@@ -123,6 +123,9 @@ global ini_IsImageStored , ini_Quality , ini_MaxClips , ini_Threshold , ini_isMe
 		, ini_CopyBeep , beepFrequency , ignoreWindows, ini_defEditor, ini_defImgEditor, ini_def_Pformat, pluginManager_k, holdClip_K, ini_PreserveClipPos
 		, chOrg_K, ini_startSearch, ini_revFormat2def, ini_pstMode_X, ini_pstMode_Y, ini_HisCloseOnInstaPaste, history_K, ini_ram_flush, ini_winClipjump := 1
 		, ini_monitorClipboard := 0
+
+;Global Position
+global picpos:={}, bttpos:={}
 
 ;Init General vars
 is_pstMode_active := 0
@@ -284,6 +287,7 @@ IfExist, %A_Startup%/Clipjump.lnk
 EmptyMem()
 lastClipboardTime := 0
 startUpComplete := 1
+Clipjump_GDIPToken := Gdip_Startup(1)		; 这里使用多实例再申请一个gdip，否则会和btt的冲突。
 OnExit, exit
 
 return
@@ -436,8 +440,14 @@ onClipboardChange:
 		else try   clipboard_copy := LASTCLIP , ISACTIVEEXCEL := 1  	;so that Cj doesnt open excel clipboard (for a longer time) and cause problems 
 		;clipboard_copy = lastclip as to remove duplicate copies in excel , ^x or ^c makes lastclip empty
 		;debugTip("2") ;<<<<<<<<<
+		
+		; in excel, need this sleep. if no sleep, copy will easily fail.
+		; 如果在 excel 里不进行延时和重试，就很容易出现 eventinfo=0 导致复制失败的情况
+		if (ISACTIVEEXCEL)
+			while (A_eventinfo=0 and A_index<=20)
+				sleep 20
 		try eventinfo := A_eventinfo
-
+		
 		if ISACTIVEEXCEL
 			isLastFormat_changed := 1                           ;same reason as above
 		else
@@ -496,7 +506,7 @@ clipChange(CErrorlevel, clipboard_copy) {
 			}
 
 			BeepAt(ini_CopyBeep, beepFrequency)
-			ToolTip, %copyMessage%
+			btt(copyMessage)
 
 			if CLIP_ACTION = CUT
 			{
@@ -524,7 +534,7 @@ clipChange(CErrorlevel, clipboard_copy) {
 			}
 
 			BeepAt(ini_CopyBeep, beepFrequency)
-			ToolTip, %copyMessage%
+			btt(copyMessage)
 			thumbGenerator()
 
 			if NOINCOGNITO and ini_IsImageStored and ( CN.Name != "pit" ){
@@ -763,12 +773,12 @@ clipSaver() {
 	FileDelete, %CLIPS_dir%/%CURSAVE%.avc
 	HASCOPYFAILED := 0
 
-	Tooltip, % TXT["_processing"],,, 7
+	btt(TXT["_processing"],,, 7)
 	while !copied
 	{
 		if ( A_index=100 ) or HASCOPYFAILED {
 			HASCOPYFAILED := 1
-			Tooltip,,,, 7
+			btt(,,, 7)
 			return
 		}
 		try {
@@ -798,7 +808,7 @@ clipSaver() {
 			else {
 				LASTCLIP := "" , LASTFORMAT := "" , HASCOPYFAILED := 1 	; lastclip was not captured by cj
 				if (temp21 = "Insert") {
-					Tooltip, % TXT["_processing"]
+					btt(TXT["_processing"])
 					SetTimer, addClipLater, -50
 				}
 			}
@@ -807,7 +817,7 @@ clipSaver() {
 				foolGUI(0)
 		}
 	}
-	Tooltip,,,, 7
+	btt(,,, 7)
 	; check for empty file
 	FileRead, test, %CLIPS_dir%/%CURSAVE%.avc
 	if test=
@@ -859,22 +869,26 @@ PasteModeTooltip(cText, notpaste=0) {
 	global
 	local tx, ty
 	if STORE["pstTipRebuild"] {
-		Tooltip
-		TooltipEx()
+		btt()
 		STORE["pstTipRebuild"] := 0
 	}
-	; SPM.X and y contain place to show a/c searchbox
-	tx := ini_pstMode_X ? ini_pstMode_X : SPM.X , ty := ini_pstMode_Y ? ini_pstMode_Y : SPM.Y
+	; 显示图片时，使用图片坐标反推 tooltip 的坐标，避免文字重叠显示在图片上。
+	; picpos.x 在这里是空值，所以验证 picpos.y。
+	if (picpos.y!="")
+		tx := picpos.x, ty := picpos.y, picpos:={}
+	else
+		; SPM.X and y contain place to show a/c searchbox
+		tx := ini_pstMode_X ? ini_pstMode_X : SPM.X , ty := ini_pstMode_Y ? ini_pstMode_Y : SPM.Y
 	if (notpaste == 1){
-		Tooltip, % cText, % tx, % ty
+		btt(cText, tx, ty)
 	} else {
 		tagText := (t := CPS[CN.NG][realActive]["Tags"]) != "" ? "(" t ")" : ""
 		if (cText == "")
-			ToolTip % "{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) tagText " " fixStatus 
-		. (WinExist("Display_Cj") ? "" : "`n`n" MSG_ERROR "`n`n"), % tx, % ty
+			bttpos:=btt("{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) tagText " " fixStatus
+		. (WinExist("Display_Cj") ? "" : "`n`n" MSG_ERROR "`n`n"), tx, ty)
 		else
-			ToolTip % "{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) GetClipboardFormat() fillWithSpaces("",5) (curPformat ? "[" curPformat "]" : "") 
-			. fillWithSpaces("",5) tagText " " fixstatus "`n`n" halfclip, % tx, % ty
+			bttpos:=btt("{" CN.Name "} Clip " realclipno " of " CURSAVE fillWithSpaces("",7) GetClipboardFormat() fillWithSpaces("",5) (curPformat ? "[" curPformat "]" : "")
+			. fillWithSpaces("",5) tagText " " fixstatus "`n`n" halfclip, tx, ty)
 	}
 }
 
@@ -919,7 +933,7 @@ ctrlCheck:
 		}
 		else if ctrlRef in cut,copy
 		{
-			Tooltip
+			btt()
 			Critical, Off
 			temp21 := choosechannelgui()
 			if Instr(temp21, "-") != 1
@@ -977,7 +991,7 @@ ctrlCheck:
 				try Clipboard := oldclip_data       ;The command opens, writes and closes clipboard . The ONCC Label is launched when writing takes place.
 
 		sleep % sleeptime
-		Tooltip
+		btt()
 
 		restoreCaller := PASTEMODE_ACT := 0 	; restoreCaller - make it 0 in case Clipboard was not touched (Pasting was done)
 		if !GetKeyState(pstKeyName) && !SPM.ACTIVE
@@ -1003,7 +1017,7 @@ ctrlCheck:
 endPastemode:
 	; ends the paste abruptly - as required by export and suspend
 	Gui, imgprv:Destroy
-	Tooltip
+	btt()
 	SetTimer, ctrlCheck, Off
 	if SPM.ACTIVE
 		gosub SPM_dispose
@@ -1029,8 +1043,7 @@ Ssuspnd:
 	return
 
 pstMode_Help:
-	Tooltip
-	TooltipEx(TXT.SET_shortcuts "`n" TXT.TIP_help, __x, __y, 1, getHFONT("s8", "Consolas"))
+	btt(TXT.SET_shortcuts "`n" TXT.TIP_help, __x, __y)
 	;PasteModeTooltip(TXT.SET_shortcuts "`n" TXT.TIP_help, 1) ;, "S8, Consolas")
 	STORE["pstTipRebuild"] := 1
 	return
@@ -1225,33 +1238,46 @@ AddClipPref(Ch, Cl, Pr, val){
 ;~ ;**************** GUI Functions ***************************************************************************
 
 showPreview(){
-	static scrnhgt := A_ScreenHeight / 2 , scrnwdt := A_ScreenWidth / 2
+	static scrnHgt := A_ScreenHeight // 2 , scrnWdt := A_ScreenWidth // 2
 	static imagepreview
+	global picpos
 
 	Gui, imgprv:New
-	Gui, imgprv:+LastFound +AlwaysOnTop -Caption +ToolWindow +Border
-	Gui, add, picture,x0 y0 w400 h300 vimagepreview,
+	Gui, imgprv:+LastFound +AlwaysOnTop -Caption +ToolWindow +Border -DPIScale
+	Gui, add, picture,x0 y0 vimagepreview,
 
 	if FileExist( (img := A_WorkingDir "\" THUMBS_dir "\" TEMPSAVE ".jpg") )
 	{
 		Gdip_getLengths(img, widthOfThumb, heightOfThumb)
+		ratio := widthOfThumb/heightOfThumb
 
 		if ( heightOfThumb > scrnHgt ) or ( widthOfThumb > scrnWdt )
-			displayH := heightOfThumb / 2
-			, displayW := widthOfThumb / 2
-		else 
+		{
+			if (heightOfThumb > widthOfThumb)
+				displayH := scrnHgt
+				, displayW := Round(displayH*ratio)
+			else
+				displayW := scrnWdt
+				, displayH := displayW//ratio
+		}
+		else
 			displayH := heightofthumb
 			, displayW := widthOfThumb
 
-		GuiControl, , imagepreview, *w%displayW% *h%displayH% %THUMBS_dir%\%TEMPSAVE%.jpg
+		hpic := LoadPicture(Format("{1}\{2}.jpg", THUMBS_dir, TEMPSAVE), Format("W{1} H{2} GDI+", displayW, displayH))
+		GuiControl, , imagepreview, % "HBITMAP:" hpic
 		MouseGetPos, ax, ay
-		ay := ay + (scrnHgt / 10)
-		if (scrnwdt*2-ax < displayw/2)
-			ax := 2
-		if (scrnhgt*2-ay < displayh/2)
-			ay := 2
+		dpi:= A_ScreenDPI/96
+		ay := ay + 50*dpi
+		if (ax+displayW > A_ScreenWidth-1)
+			ax := A_ScreenWidth-1 - displayW - 1	; gui's border = 1     xpos = width-1
+		if (ay+displayH > A_ScreenHeight-1)
+			ay := A_ScreenHeight-1 - displayH - 1
 		; Try ensures we dont see the error if it happens due to thread overlaps
 		tx := ini_pstMode_X ? ini_pstMode_X : ax , ty := ini_pstMode_Y ? ini_pstMode_Y : ay
+		; In the corner, need to correct the text pos by using the pic pos, otherwise overlap will occur.
+		; 不计算不保存x坐标，这样文本框在角落时依然跟随鼠标而不会跟随图片左上角，导致位置大幅跳跃进而造成视觉不和谐。
+		, picpos.y := ini_pstMode_Y ? ini_pstMode_Y : (ay - 50*dpi + 16*dpi)
 
 		try Gui, imgprv:Show, x%tx% y%ty% h%displayh% w%displayw% NoActivate, Display_Cj
 	}
@@ -1280,8 +1306,10 @@ historyCleanup(){
 ;----------------------- ACTION MODE ----------------------------------------------------
 
 actionmode:
-	update_actionmode()
-	temp_am := TT_Console(ACTIONMODE.text, ACTIONMODE.keys, __x, __y, "s9", "Consolas", 5)
+	Font_actionmode := "Consolas"
+	FontSize_actionmode := 12
+	maximum_width_of_actionmode_text := update_actionmode(Font_actionmode, FontSize_actionmode)
+	temp_am := TT_Console(ACTIONMODE.text, ACTIONMODE.keys, __x, __y, FontSize_actionmode, Font_actionmode, 5, , maximum_width_of_actionmode_text)
 	if ACTIONMODE[temp_am] != "Exit_actmd"
 	{
 		if Instr(ACTIONMODE[temp_am] , "(")
@@ -1307,27 +1335,35 @@ init_actionmode(){
 		, U_caption: TXT.PLG_sync_cb, B_caption: TXT.SET_holdclip}
 }		; use runPlugin so that user might delete plugin
 
-update_actionmode(){
+update_actionmode(Font, FontSize){
 	static numadd := "0123456789"
 	thetext := ""
 	.  PROGNAME " " TXT.ACT__name
 	. "`n-----------"
 	. "`n"
 	ACTIONMODE.remove("text") , ACTIONMODE.remove("keys")
-
-	thetext .= "`n" fillWithSpaces(TXT.ACT_switchChannel, 25) " -  " "0..9"
-
+	
+	thetext .= "`n" TXT.ACT_switchChannel "`t-  " "0..9"
+	; temp_text is used to calculate the text width, the width is used to align the text
+	temp_text := TXT.ACT_switchChannel
+	
 	for k,v in ACTIONMODE
 	if !Instr(k, "_") && (k != "Esc") && v{
 		thekeys .= k " "
-		thetext .= "`n" fillwithSpaces( ACTIONMODE[k "_caption"] ? ACTIONMODE[k "_caption"] : v , 25 ) " -  " k
+		thetext .= "`n" (ACTIONMODE[k "_caption"] ? ACTIONMODE[k "_caption"] : v) "`t-  " k
+		temp_text .= "`n" (ACTIONMODE[k "_caption"] ? ACTIONMODE[k "_caption"] : v)
 	}
 	if ACTIONMODE.Esc
-		thetext .= "`n`n" fillwithSpaces( ACTIONMODE.Esc_caption ? ACTIONMODE.Esc_caption : ACTIONMODE.Esc , 25 ) " -  Esc" , thekeys .= "Esc"
+	{
+		thetext .= "`n`n" (ACTIONMODE.Esc_caption ? ACTIONMODE.Esc_caption : ACTIONMODE.Esc) "`t-  Esc" , thekeys .= "Esc"
+		temp_text .= "`n" (ACTIONMODE.Esc_caption ? ACTIONMODE.Esc_caption : ACTIONMODE.Esc)
+	}
 	loop, parse, numadd
 		thekeys .= " " A_LoopField
 	ACTIONMODE.keys := Trim(thekeys)
 	ACTIONMODE.text := thetext
+	
+	return btt(temp_text,,,, {Font:Font, FontSize:FontSize}, {JustCalculateSize:true}).w
 }
 
 ;****************COPY FILE/FOLDER/DATA***************************************************************************
@@ -1394,9 +1430,9 @@ strtup:
 	return
 
 updt:
-	Tooltip, Checking for Updates ...... , , , 3
+	btt("Checking for Updates ...... ", , , 3)
 	URLDownloadToFile, %UPDATE_FILE%, %A_WorkingDir%/cache/latestversion.txt
-	ToolTip, ,,, 3
+	btt(,,, 3)
 	FileRead, temp, %A_WorkingDir%/cache/latestversion.txt
 	lversion_changes := "`n`nCHANGES`n"
 	loop, parse, temp, `n, `r
@@ -1421,7 +1457,7 @@ addToWinClip(lastEntry, extraTip){
 	if CURSAVE
 		try FileRead, Clipboard, *c %A_WorkingDir%/%CLIPS_dir%/%lastentry%.avc
 	Sleep, 1000
-	ToolTip
+	btt()
 	API.blockMonitoring(0)
 }
 
@@ -1470,7 +1506,7 @@ export:
 	loop
 		if !FileExist(temp := A_MyDocuments "\export" A_index ".cj")
 			break
-	Tooltip % "{" CN.Name "} Clip " realClipNo " " TXT._exportedto "`n" temp
+	btt("{" CN.Name "} Clip " realClipNo " " TXT._exportedto "`n" temp)
 	SetTimer, TooltipOff, 2500
 	try FileAppend, %ClipboardAll%, % temp
 	return
@@ -1492,7 +1528,7 @@ editClip(cnl, clip, owner="none"){
 		API.blockMonitoring(0)
 	}
 	temp_clipboard := trygetVar("Clipboard")
-	Tooltip, % TXT.TIP_editing,,, 10
+	btt(TXT.TIP_editing,,, 10)
 	if owner = pstmd
 	{
 		IScurCBACTIVE := 1
@@ -1597,7 +1633,7 @@ disable_clipjump:
 	changeIcon()
 
 	hkZ( ( paste_k ? "$" pstIdentifier paste_k : emptyvar ) , "Paste", CLIPJUMP_STATUS)
-	Menu, Options_Tray, % !CLIPJUMP_STATUS ? "Check" : "Uncheck", % TXT.TRY_disable " " PROGNAME
+	Menu, Options_Tray, % !CLIPJUMP_STATUS ? "Check" : "Uncheck", % TXT.TRY_disable
 	init_actionmode() 			;refresh enable/disable text in action mode
 	return
 
@@ -1649,14 +1685,13 @@ Receive_WM_COPYDATA(wParam, lParam){
 #Include %A_ScriptDir%\lib\multi.ahk
 #Include %A_ScriptDir%\lib\aboutgui.ahk
 #include %A_ScriptDir%\lib\TT_Console.ahk
-#include %A_ScriptDir%\lib\Gdip_min.ahk
+#include %A_ScriptDir%\lib\BTT.ahk
 #include %A_ScriptDir%\lib\HotkeyParser.ahk
 #include %A_ScriptDir%\lib\anticj_func_labels.ahk
 #include %A_ScriptDir%\lib\settings gui plug.ahk
 #include %A_ScriptDir%\lib\history gui plug.ahk
 #include %A_ScriptDir%\lib\pluginManager.ahk
 #include %A_ScriptDir%\lib\channelOrganizer.ahk
-#include %A_ScriptDir%\lib\TooltipEx.ahk
 #include %A_ScriptDir%\lib\SQLiteDB\Class_SQLiteDB.ahk
 #include %A_ScriptDir%\lib\settingsHelper.ahk
 #include *i %A_ScriptDir%\plugins\_registry.ahk

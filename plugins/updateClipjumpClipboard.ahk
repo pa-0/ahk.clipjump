@@ -1,4 +1,4 @@
-;@Plugin-Name Sync Clipjump Clipboard
+﻿;@Plugin-Name Sync Clipjump Clipboard
 ;@Plugin-Silent 1
 ;@Plugin-Description Updates/Syncs clipjump clipboards with the current active system clipboard
 ;@Plugin-Author Avi
